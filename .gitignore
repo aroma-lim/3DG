@@ -1,0 +1,13 @@
+.vs/*
+
+x64/**
+
+lib/**
+
+external/**
+
+bin/**
+
+build/**
+
+3DG/.vs/**
