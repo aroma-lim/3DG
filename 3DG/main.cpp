@@ -19,14 +19,84 @@ using namespace glm;
 #include <common/shader.hpp>
 #include <common/controls.hpp>
 
+#include <iostream>
+#include <vector>
+using namespace std;
+
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
 
 int window_height;
 int window_width;
 
+class Point {
+	public:
+		int x; int y; 
+		float r; float g; float b;
+
+		Point(int x, int y) {
+			this->x = x;
+			this->y = y;
+			this->r = 1.f;
+			this->g = 0.86f;
+			this->b = 0.f;
+		}
+		
+		/*void setPos(int x, int y) {
+			this->x = x;
+			this->y = y;
+		}*/
+
+		void setColor(float r, float g, float b) {
+			this->r = r;
+			this->g = g;
+			this->b = b;
+		}
+
+};
+
+
 int main(void)
 {
+	// ==============================
+	// 2D Points Generation
+	// ============================== 
+
+	vector<Point> point;
+	int x, y, cnt = 0;
+
+	while (1) {
+		cout << "Point[" << cnt << "]: ";
+		cin >> x;
+		if (getchar() == '*')
+			break;
+		cin >> y;
+		if (getchar() == '*')
+			break;
+		
+		try {
+			if (cin.fail())
+				throw 'c';
+			else if (x < -500 || x > 500 || y < -500 || y > 500)
+				throw out_of_range("(x, y) must be between -500 to 500");
+			else
+				throw 1;
+		}
+		catch (out_of_range & e) {
+			cout << "Out of range: " << e.what() << endl;
+		}
+		catch (char c) {
+			cin.clear();
+			cin.ignore(256, '\n');
+		}
+		catch (int i) {
+			point.push_back(Point(x, y));
+			cnt++;
+		}
+
+	};
+
+
 	// Initialise GLFW
 	if (!glfwInit())
 	{

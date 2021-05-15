@@ -52,8 +52,6 @@ void computeMatricesFromInputs(){
 
 	// Compute new orientation
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-
-
 		if (!isFirstmouse) {
 			if (xpos != xpos0) horizontalAngle += mouseSpeed * float(xpos - xpos0);
 			if (ypos != ypos0) {
