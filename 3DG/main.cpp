@@ -33,10 +33,10 @@ int window_width;
 
 class Point {
 	public:
-		int x; int y; 
+		float x; float y;
 		float r; float g; float b;
 
-		Point(int x, int y) {
+		Point(float x, float y) {
 			this->x = x;
 			this->y = y;
 			this->r = 1.f;
@@ -55,7 +55,8 @@ int main(void)
 	cout << "Enter '*' to finish typing." << endl;
 
 	vector<Point> point;
-	int x, y, cnt = 0;
+	float x, y;
+	int cnt = 0;
 	while (1) {
 		cout << "Point[" << cnt << "]: ";
 		cin >> x;
@@ -82,6 +83,8 @@ int main(void)
 			cout << "The type must be integer" << endl;
 		}
 		catch (int i) {
+			x /= 10;
+			y /= 10;
 			point.push_back(Point(x, y));
 			cnt++;
 		}
@@ -132,7 +135,7 @@ int main(void)
 	glfwSetCursorPos(window, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -153,7 +156,7 @@ int main(void)
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
 	// Make vertices with entered points.
-	static GLint g_vertex_points[MAX_POINTS * 3];
+	static GLfloat g_vertex_points[MAX_POINTS * 3];
 	int j = 0;
 	for (int i = 0; i < cnt; i++) {
 		g_vertex_points[j++] = point[i].x;
@@ -244,7 +247,7 @@ int main(void)
 		glVertexAttribPointer(
 			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
 			3,                  // size
-			GL_INT,             // type
+			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
