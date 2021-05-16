@@ -23,16 +23,16 @@ glm::mat4 getProjectionMatrix(){
 
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3( 0, 0, 5 ); 
+glm::vec3 position = glm::vec3( 0, 3.5, 11.5 ); 
 // Initial horizontal angle : toward -Z
-float horizontalAngle = M_PI;
+float horizontalAngle = 0.0f;
 // Initial vertical angle : none
-float verticalAngle = 0.0f;
+float verticalAngle = -M_PI / 2.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
-float speed = 3.0f; // 3 units / second
-float mouseSpeed = 0.005f;
+float speed = 5.0f; // 3 units / second
+float mouseSpeed = 0.002f;
 
 double xpos, ypos;
 double xpos0, ypos0;
@@ -70,23 +70,44 @@ void computeMatricesFromInputs(){
 	}
 	else // in the case of GLFW_RELEASE
 		isFirstmouse = true;
-
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
-		cos(verticalAngle) * sin(horizontalAngle), 
-		sin(verticalAngle),
-		cos(verticalAngle) * cos(horizontalAngle)
+		cos(verticalAngle) * sin(horizontalAngle),
+		cos(verticalAngle) * cos(horizontalAngle),
+		sin(verticalAngle)
 	);
-	
+
 	// Right vector
 	glm::vec3 right = glm::vec3(
-		sin(horizontalAngle - M_PI/2.0f), 
-		0,
-		cos(horizontalAngle - M_PI/2.0f)
+		sin(horizontalAngle - M_PI / 2.0f),
+		cos(horizontalAngle - M_PI / 2.0f),
+		0
 	);
-	
+
+	glm::vec3 zaxis(0, 0, 1);
+
+	// Forward vector
+	glm::vec3 forward = glm::cross(zaxis, right);
+
 	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
+	glm::vec3 up = glm::cross(direction, right);
+
+	//// Direction : Spherical coordinates to Cartesian coordinates conversion
+	//glm::vec3 direction(
+	//	cos(verticalAngle) * sin(horizontalAngle), 
+	//	sin(verticalAngle),
+	//	cos(verticalAngle) * cos(horizontalAngle)
+	//);
+	//
+	//// Right vector
+	//glm::vec3 right = glm::vec3(
+	//	sin(horizontalAngle - M_PI/2.0f), 
+	//	0,
+	//	cos(horizontalAngle - M_PI/2.0f)
+	//);
+	//
+	//// Up vector
+	//glm::vec3 up = glm::cross( right, direction );
 
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
