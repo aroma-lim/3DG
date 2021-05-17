@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS 1
+#define _USE_MATH_DEFINES
 
 // Include standard headers
 #include <stdio.h>
@@ -21,6 +22,7 @@ using namespace glm;
 
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -30,6 +32,9 @@ using namespace std;
 
 int window_height;
 int window_width;
+
+const float toRadians = M_PI / 180.0f;
+float currentAngle = 0.0f;
 
 class Point {
 	public:
@@ -234,6 +239,8 @@ int main(void)
 		glm::mat4 ViewMatrix = getViewMatrix();
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		
+		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform

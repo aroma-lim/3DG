@@ -10,6 +10,8 @@ using namespace glm;
 
 #include "controls.hpp"
 #include <math.h>
+#include <iostream>
+using namespace std;
 
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
@@ -20,14 +22,6 @@ glm::mat4 getViewMatrix(){
 glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
-
-//// Initial position : on +Z
-//glm::vec3 position = glm::vec3( 0, 3.5, 11.5 ); 
-//// Initial horizontal angle : toward -Z
-//float horizontalAngle = 0.0f;
-//// Initial vertical angle : none
-//float verticalAngle = -M_PI / 2.0f;
-
 
 // Initial position : on +Z
 glm::vec3 position = glm::vec3(0, 1, 95);
@@ -45,6 +39,11 @@ double xpos, ypos;
 double xpos0, ypos0;
 bool isFirstmouse = true;
 
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	currentAngle += 5 * yoffset;
+}
+
 void computeMatricesFromInputs(){
 
 	// glfwGetTime is called only once, the first time this function is called
@@ -60,14 +59,10 @@ void computeMatricesFromInputs(){
 	// Compute new orientation
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 		if (!isFirstmouse) {
-			if (xpos != xpos0) horizontalAngle += mouseSpeed * float(xpos - xpos0);
-			if (ypos != ypos0) {
+			if (xpos != xpos0) 
+				horizontalAngle -= mouseSpeed * float(xpos - xpos0);
+			if (ypos != ypos0) 
 				verticalAngle -= mouseSpeed * float(ypos - ypos0);
-				if (verticalAngle < -M_PI / 2.f)
-					verticalAngle = -M_PI / 2.f;
-				if (verticalAngle > M_PI / 2.f)
-					verticalAngle = M_PI / 2.f;
-			}
 		}
 		else
 			isFirstmouse = false;
@@ -78,27 +73,8 @@ void computeMatricesFromInputs(){
 	else // in the case of GLFW_RELEASE
 		isFirstmouse = true;
 
-	//// Direction : Spherical coordinates to Cartesian coordinates conversion
-	//glm::vec3 direction(
-	//	cos(verticalAngle) * sin(horizontalAngle),
-	//	cos(verticalAngle) * cos(horizontalAngle),
-	//	sin(verticalAngle)
-	//);
-
-	//// Right vector
-	//glm::vec3 right = glm::vec3(
-	//	sin(horizontalAngle - M_PI / 2.0f),
-	//	cos(horizontalAngle - M_PI / 2.0f),
-	//	0
-	//);
-
-	//glm::vec3 zaxis(0, 0, 1);
-
-	//// Forward vector
-	//glm::vec3 forward = glm::cross(zaxis, right);
-
-	//// Up vector
-	//glm::vec3 up = glm::cross(direction, right);
+	// Scroll with mouse wheel
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
@@ -109,9 +85,9 @@ void computeMatricesFromInputs(){
 	
 	// Right vector
 	glm::vec3 right = glm::vec3(
-		sin(horizontalAngle - M_PI/2.0f), 
-		0,
-		cos(horizontalAngle - M_PI/2.0f)
+		sin(horizontalAngle - M_PI / 2.0f), 
+		cos(horizontalAngle - M_PI / 2.0f),
+		0
 	);
 	
 	// Up vector

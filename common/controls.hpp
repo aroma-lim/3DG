@@ -8,4 +8,6 @@ glm::mat4 getProjectionMatrix();
 extern int window_height;
 extern int window_width;
 
+extern float currentAngle;
+
 #endif
