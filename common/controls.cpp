@@ -21,7 +21,6 @@ glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
 
-
 //// Initial position : on +Z
 //glm::vec3 position = glm::vec3( 0, 3.5, 11.5 ); 
 //// Initial horizontal angle : toward -Z
@@ -118,13 +117,14 @@ void computeMatricesFromInputs(){
 	// Up vector
 	glm::vec3 up = glm::cross( right, direction );
 
-	// Move forward
+	// Strafe up
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-		position += direction * deltaTime * speed;
+		position += up * deltaTime * speed;
 	}
-	// Move backward
+	// Strafe down
 	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-		position -= direction * deltaTime * speed;
+		if (position.z < 99)
+			position -= up * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
@@ -133,6 +133,16 @@ void computeMatricesFromInputs(){
 	// Strafe left
 	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
 		position -= right * deltaTime * speed;
+	}
+	// Move forward (zoom in)
+	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+		if (position.z > 3)
+			position += direction * deltaTime * speed;
+	}
+	// Move backward (zoom out)
+	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+		if (position.z < 99)
+			position -= direction * deltaTime * speed;
 	}
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.

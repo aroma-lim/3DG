@@ -239,7 +239,7 @@ int main(void)
 		// in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		
-		glPointSize(5.f);
+		glPointSize(10.f);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
