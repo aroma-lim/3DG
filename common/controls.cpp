@@ -123,7 +123,12 @@ void computeMatricesFromInputs(){
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
-	float aspectRatio = window_width / window_height;
+	float aspectRatio;
+	if (window_width <= 0 || window_height <= 0)
+		aspectRatio = 1;
+	else
+		aspectRatio = window_width / window_height;
+	
 	ProjectionMatrix = glm::perspective(FoV, aspectRatio, 0.1f, 100.0f);
 
 	// Camera matrix

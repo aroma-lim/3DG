@@ -35,6 +35,7 @@ int window_width;
 
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
+bool isFirst = true;
 
 class Point {
 	public:
@@ -95,6 +96,8 @@ int main(void)
 		}
 
 	};
+	cin.clear();
+	cin.ignore(256, '\n');
 	cout << "num points: " << cnt << endl;
 	
 	// Initialise GLFW
@@ -155,7 +158,7 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+	GLuint programID = LoadShaders();
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -170,10 +173,10 @@ int main(void)
 	}
 
 	// Make color for each vertex.
-	static GLfloat g_color_points[MAX_POINTS * 3];
+	static GLfloat* g_color_points = new GLfloat[MAX_POINTS * 3];
 
 	// Make the first and the last point colors different
-	point[0].r = 1.f;
+	/*point[0].r = 1.f;
 	point[0].g = 0.f;
 	point[0].b = 0.f;
 
@@ -187,7 +190,7 @@ int main(void)
 		g_color_points[j++] = point[i].r;
 		g_color_points[j++] = point[i].g;
 		g_color_points[j++] = point[i].b;
-	}
+	}*/
 
 	// GPU buffer for axes
 	static const GLfloat g_axes_vertex_data[] = {
@@ -219,7 +222,8 @@ int main(void)
 	GLuint colorbuffer_points;
 	glGenBuffers(1, &colorbuffer_points);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_points);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_points), g_color_points, GL_STATIC_DRAW);
+	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
 	do {
 
@@ -240,14 +244,27 @@ int main(void)
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 		
+		// For rotate with mouse wheel
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// Fill GPU buffer for dynamic draw
+		glPointSize(10.f);
+		j = 0;
+		for (int i = 0; i < cnt; i++) {
+			g_color_points[j++] = point[i].r;
+			g_color_points[j++] = point[i].g;
+			g_color_points[j++] = point[i].b;
+		}
+
+		// Bind buffer for dynamic draw
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_points);
+		glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 4 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_POINTS * 4 * sizeof(GLfloat), g_color_points);
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		
-		glPointSize(10.f);
-
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_points);
@@ -310,6 +327,19 @@ int main(void)
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		// Press Enter to type Start point and Last point in console
+		if (isFirst && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+			float sx, sy, lx, ly;
+			bool iseof = true;
+				
+			cout << "Start point: ";
+			cin >> sx >> sy;
+			cout << "Last point: ";
+			cin >> lx >> ly;
+		
+			isFirst = false;
+		}
 
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
