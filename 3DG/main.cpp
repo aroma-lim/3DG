@@ -23,6 +23,7 @@ using namespace glm;
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ int window_width;
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
 bool isFirst = true;
+bool isColorSet = false;
 
 class Point {
 	public:
@@ -175,23 +177,6 @@ int main(void)
 	// Make color for each vertex.
 	static GLfloat* g_color_points = new GLfloat[MAX_POINTS * 3];
 
-	// Make the first and the last point colors different
-	/*point[0].r = 1.f;
-	point[0].g = 0.f;
-	point[0].b = 0.f;
-
-	int last = cnt - 1;
-	point[last].r = 0.f;
-	point[last].g = 0.f;
-	point[last].b = 1.f;
-
-	j = 0;
-	for (int i = 0; i < cnt; i++) {
-		g_color_points[j++] = point[i].r;
-		g_color_points[j++] = point[i].g;
-		g_color_points[j++] = point[i].b;
-	}*/
-
 	// GPU buffer for axes
 	static const GLfloat g_axes_vertex_data[] = {
 		8, 0, 0, 200, 0, 0,
@@ -225,6 +210,8 @@ int main(void)
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
+	float startx, starty, lastx, lasty;
+
 	do {
 
 		// Clear the screen
@@ -246,6 +233,37 @@ int main(void)
 		
 		// For rotate with mouse wheel
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		if (!isFirst && !isColorSet) {
+			// Find the start and the last point
+			pair<float, int> distance[MAX_POINTS];
+			for (int i = 0; i < cnt; i++) {
+				distance[i].first = abs(point[i].x - startx) + abs(point[i].y - starty);
+				distance[i].second = i;
+			}
+			sort(distance, distance + cnt);
+			int startidx = distance[0].second;
+
+			for (int i = 0; i < cnt; i++) {
+				distance[i].first = abs(point[i].x - lastx) + abs(point[i].y - lasty);
+				distance[i].second = i;
+			}
+			sort(distance, distance + cnt);
+			int lastidx = distance[0].second;
+			if (lastidx == startidx)
+				lastidx = distance[1].second;
+
+			// Set the color of start and the last point
+			point[startidx].r = 1.f;
+			point[startidx].g = 0.f;
+			point[startidx].b = 0.f;
+
+			point[lastidx].r = 0.f;
+			point[lastidx].g = 0.f;
+			point[lastidx].b = 1.f;
+
+			isColorSet = true;
+		}
 
 		// Fill GPU buffer for dynamic draw
 		glPointSize(10.f);
@@ -330,19 +348,20 @@ int main(void)
 
 		// Press Enter to type Start point and Last point in console
 		if (isFirst && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-			float sx, sy, lx, ly;
-			bool iseof = true;
-				
 			cout << "Start point: ";
-			cin >> sx >> sy;
+			cin >> startx >> starty;
 			cout << "Last point: ";
-			cin >> lx >> ly;
-		
+			cin >> lastx >> lasty;
+
+			startx /= 10; starty /= 10;
+			lastx /= 10;  lasty /= 10;
+
 			isFirst = false;
 		}
 
-	} // Check if the ESC key was pressed or the window was closed
+	} // Check if the ESC key or Q was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwGetKey(window, GLFW_KEY_Q) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO and shader
