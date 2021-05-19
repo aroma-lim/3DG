@@ -26,6 +26,7 @@ using namespace glm;
 #include <vector>
 #include <math.h>
 #include <algorithm>
+#include <thread>
 
 using namespace std;
 
@@ -39,8 +40,10 @@ int window_width;
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
 bool isFirst = true;
+bool isStartLastSet = false;
 bool isColorSet = false;
 bool isLineSet = false;
+float startx, starty, lastx, lasty;
 
 class Point {
 	public:
@@ -56,12 +59,23 @@ class Point {
 		}
 };
 
+void tConsole() {
+	while (isFirst) {
+		// wait
+	}
+	cout << "Start point: ";
+	cin >> startx >> starty;
+	cout << "Last point: ";
+	cin >> lastx >> lasty;
+
+	startx /= 10; starty /= 10;
+	lastx /= 10;  lasty /= 10;
+	isStartLastSet = true;
+}
 
 int main(void)
 {
-	// ==============================
 	// 2D Points Generation
-	// ============================== 
 	cout << "Enter the coordinates. (range: -500 ~ +500)" << endl;
 	cout << "Enter '*' to finish typing." << endl;
 	
@@ -109,8 +123,6 @@ int main(void)
 #endif // EXECUTE
 
 #ifdef TEST
-
-
 	Point point[20] = { {60,-8}, {400,500}, {90,0}, {0,70}, {40,30},
 						{20,0}, {0,-310}, {70,0}, {-88,-80}, {-220,500},
 						{304,-220}, {-20,-340}, {460,0}, {220,0}, {-10,20},
@@ -165,7 +177,7 @@ int main(void)
 	glfwSetCursorPos(window, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -201,28 +213,7 @@ int main(void)
 	static GLfloat* g_vertex_lines = new GLfloat[MAX_POINTS * 2 * 3];
 	static GLfloat* g_color_lines = new GLfloat[MAX_POINTS * 2 * 3];
 
-	// GPU buffer for axes
-	static const GLfloat g_axes_vertex_data[] = {
-		8, 0, 0, 200, 0, 0,
-		0, 0, 0, 0, 200, 0,
-		0, 0, 0, 0, 0, 200
-	};
-	static const GLfloat g_axes_color_data[] = {
-		1, 0, 0, 1, 0, 0,
-		0, 1, 0, 0, 1, 0,
-		0, 0, 1, 0, 0, 1
-	};
-
-	GLuint vertexbuffer_axes;
-	glGenBuffers(1, &vertexbuffer_axes);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_axes);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_axes_vertex_data), g_axes_vertex_data, GL_STATIC_DRAW);
-
-	GLuint colorbuffer_axes;
-	glGenBuffers(1, &colorbuffer_axes);
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_axes);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_axes_color_data), g_axes_color_data, GL_STATIC_DRAW);
-
+	// Generate& Bind Buffer
 	GLuint vertexbuffer_points;
 	glGenBuffers(1, &vertexbuffer_points);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_points);
@@ -246,9 +237,9 @@ int main(void)
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
-	float startx, starty, lastx, lasty;
 	int lineIdx[MAX_POINTS];
 	int lastidx;
+	thread t(tConsole);
 
 	do {
 
@@ -273,7 +264,7 @@ int main(void)
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// Indicate the start and the last point
-		if (!isFirst && !isColorSet) {
+		if (!isFirst && !isColorSet && isStartLastSet) {
 			// Find the start point
 			pair<float, int> distance[MAX_POINTS];
 			for (int i = 0; i < cnt; i++) {
@@ -432,49 +423,13 @@ int main(void)
 			glDisableVertexAttribArray(0);
 		}
 
-		// 1rst attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_axes);
-		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
-
-		// 2nd attribute buffer : colors
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_axes);
-		glVertexAttribPointer(
-			1,                          // attribute. No particular reason for 1, but must match the layout in the shader.
-			3,                          // size
-			GL_FLOAT,                   // type
-			GL_FALSE,                   // normalized?
-			0,                          // stride
-			(void*)0                    // array buffer offset
-		);
-
-		glDrawArrays(GL_LINES, 0, 3 * 2); // 3 lines * 2 vertex
-
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(0);
-
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		// Press Enter to type Start point and Last point in console
-		if (isFirst && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-			cout << "Start point: ";
-			cin >> startx >> starty;
-			cout << "Last point: ";
-			cin >> lastx >> lasty;
-
-			startx /= 10; starty /= 10;
-			lastx /= 10;  lasty /= 10;
-
+		//if (isFirst && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+		if (isFirst) {
 			isFirst = false;
 		}
 
@@ -491,6 +446,9 @@ int main(void)
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
+
+	// Join thread
+	t.join();
 
 	return 0;
 }

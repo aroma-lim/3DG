@@ -80,9 +80,9 @@ void computeMatricesFromInputs(){
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 		if (!isFirstmouse) {
 			if (xpos != xpos0)
-				position += right * mouseSpeed * float(xpos - xpos0);
+				position -= right * mouseSpeed * float(xpos - xpos0);
 			if (ypos != ypos0)
-				position -= up * mouseSpeed * float(ypos - ypos0);;
+				position += up * mouseSpeed * float(ypos - ypos0);;
 		}
 		else
 			isFirstmouse = false;
@@ -99,8 +99,7 @@ void computeMatricesFromInputs(){
 	}
 	// Strafe down
 	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-		if (position.z < 99)
-			position -= up * deltaTime * speed;
+		position -= up * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
