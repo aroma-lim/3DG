@@ -33,7 +33,7 @@ float verticalAngle = 0.0f;
 float initialFoV = 45.0f;
 
 float speed = 20.0f; // 3 units / second
-float mouseSpeed = 0.002f;
+float mouseSpeed = 0.1f;
 
 double xpos, ypos;
 double xpos0, ypos0;
@@ -56,23 +56,6 @@ void computeMatricesFromInputs(){
 	// Get mouse position
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	// Compute new orientation
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-		if (!isFirstmouse) {
-			if (xpos != xpos0) 
-				horizontalAngle -= mouseSpeed * float(xpos - xpos0);
-			if (ypos != ypos0) 
-				verticalAngle -= mouseSpeed * float(ypos - ypos0);
-		}
-		else
-			isFirstmouse = false;
-
-		xpos0 = xpos;
-		ypos0 = ypos;
-	}
-	else // in the case of GLFW_RELEASE
-		isFirstmouse = true;
-
 	// Scroll with mouse wheel
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -92,6 +75,23 @@ void computeMatricesFromInputs(){
 	
 	// Up vector
 	glm::vec3 up = glm::cross( right, direction );
+
+	// Compute new position with mouse
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+		if (!isFirstmouse) {
+			if (xpos != xpos0)
+				position += right * mouseSpeed * float(xpos - xpos0);
+			if (ypos != ypos0)
+				position -= up * mouseSpeed * float(ypos - ypos0);;
+		}
+		else
+			isFirstmouse = false;
+
+		xpos0 = xpos;
+		ypos0 = ypos;
+	}
+	else // in the case of GLFW_RELEASE
+		isFirstmouse = true;
 
 	// Strafe up
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){

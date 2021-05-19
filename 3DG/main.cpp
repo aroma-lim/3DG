@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #define _USE_MATH_DEFINES
+#define TEST
+//#define EXECUTE
 
 // Include standard headers
 #include <stdio.h>
@@ -62,10 +64,12 @@ int main(void)
 	// ============================== 
 	cout << "Enter the coordinates. (range: -500 ~ +500)" << endl;
 	cout << "Enter '*' to finish typing." << endl;
-
-	vector<Point> point;
+	
 	float x, y;
 	int cnt = 0;
+
+#ifdef EXECUTE
+	vector<Point> point;
 	while (1) {
 		cout << "Point[" << cnt << "]: ";
 		cin >> x;
@@ -102,6 +106,21 @@ int main(void)
 	cin.clear();
 	cin.ignore(256, '\n');
 	cout << "num points: " << cnt << endl;
+#endif // EXECUTE
+
+#ifdef TEST
+
+
+	Point point[20] = { {60,-8}, {400,500}, {90,0}, {0,70}, {40,30},
+						{20,0}, {0,-310}, {70,0}, {-88,-80}, {-220,500},
+						{304,-220}, {-20,-340}, {460,0}, {220,0}, {-10,20},
+						{0,20}, {-70,80}, {-330,-440}, {140,-70}, {70,-500}, };
+	cnt = 20;
+	for (int i = 0; i < cnt; i++) {
+		point[i].x /= 10;
+		point[i].y /= 10;
+	}
+#endif // TEST
 	
 	// Initialise GLFW
 	if (!glfwInit())
