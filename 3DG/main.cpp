@@ -288,25 +288,21 @@ int main(void)
 			point[lastidx].b = 1.f;
 
 			isColorSet = true;
-			
 		}
 
 		//  Draw lines
-		if (isColorSet && !isLineSet) {
-			//glLineWidth(5.f);
+		if (isColorSet) {
+			glLineWidth(10.f);
 			int i = 0, j = 0, idx1, idx2;
 			bool isSkip = false;
 
 			while (i + 1 < cnt) {
 				idx1 = lineIdx[i++];
 				idx2 = lineIdx[i];
-				if (idx2 == lastidx) {
-					if (i + 1 != cnt) { // if lastidx is in the middle, skip it
-						idx2 = lineIdx[++i];
-						isSkip = true;
-					}
+				if (idx2 == lastidx && i + 1 != cnt) { // if lastidx is in the middle, skip it
+					idx2 = lineIdx[++i];
+					isSkip = true;
 				}
-				
 				g_vertex_lines[j++] = point[idx1].x;
 				g_vertex_lines[j++] = point[idx1].y;
 				g_vertex_lines[j++] = 0;
@@ -323,16 +319,12 @@ int main(void)
 				g_vertex_lines[j++] = 0;
 			}
 
-			for (int i = 0; i < cnt - 1; i++) {
-				g_color_lines[j++] = 1.f;
-				g_color_lines[j++] = 1.f;
-				g_color_lines[j++] = 1.f;
-				g_color_lines[j++] = 1.f;
-				g_color_lines[j++] = 1.f;
+			j = 0;
+			for (int i = 0; i < (cnt - 1) * 6; i++) {
 				g_color_lines[j++] = 1.f;
 			}
 
-			isLineSet = true;
+			if (!isLineSet) isLineSet = true;
 		}
 
 		// Fill GPU buffer for dynamic draw
