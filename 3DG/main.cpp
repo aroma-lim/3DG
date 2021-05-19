@@ -38,6 +38,7 @@ const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
 bool isFirst = true;
 bool isColorSet = false;
+bool isLineSet = false;
 
 class Point {
 	public:
@@ -145,7 +146,7 @@ int main(void)
 	glfwSetCursorPos(window, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -176,6 +177,10 @@ int main(void)
 
 	// Make color for each vertex.
 	static GLfloat* g_color_points = new GLfloat[MAX_POINTS * 3];
+
+	// Make vertices and color for lines
+	static GLfloat* g_vertex_lines = new GLfloat[MAX_POINTS * 2 * 3];
+	static GLfloat* g_color_lines = new GLfloat[MAX_POINTS * 2 * 3];
 
 	// GPU buffer for axes
 	static const GLfloat g_axes_vertex_data[] = {
@@ -210,7 +215,21 @@ int main(void)
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
+	GLuint vertexbuffer_lines;
+	glGenBuffers(1, &vertexbuffer_lines);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_lines);
+	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+
+	GLuint colorbuffer_lines;
+	glGenBuffers(1, &colorbuffer_lines);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_lines);
+	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+
 	float startx, starty, lastx, lasty;
+	int lineIdx[MAX_POINTS];
+	int lastidx;
 
 	do {
 
@@ -234,8 +253,9 @@ int main(void)
 		// For rotate with mouse wheel
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 
+		// Indicate the start and the last point
 		if (!isFirst && !isColorSet) {
-			// Find the start and the last point
+			// Find the start point
 			pair<float, int> distance[MAX_POINTS];
 			for (int i = 0; i < cnt; i++) {
 				distance[i].first = abs(point[i].x - startx) + abs(point[i].y - starty);
@@ -244,12 +264,17 @@ int main(void)
 			sort(distance, distance + cnt);
 			int startidx = distance[0].second;
 
+			// Store idx for drawing lines
+			for (int i = 0; i < cnt; i++)
+				lineIdx[i] = distance[i].second;
+
+			// Find the last point
 			for (int i = 0; i < cnt; i++) {
 				distance[i].first = abs(point[i].x - lastx) + abs(point[i].y - lasty);
 				distance[i].second = i;
 			}
 			sort(distance, distance + cnt);
-			int lastidx = distance[0].second;
+			lastidx = distance[0].second;
 			if (lastidx == startidx)
 				lastidx = distance[1].second;
 
@@ -263,6 +288,51 @@ int main(void)
 			point[lastidx].b = 1.f;
 
 			isColorSet = true;
+			
+		}
+
+		//  Draw lines
+		if (isColorSet && !isLineSet) {
+			//glLineWidth(5.f);
+			int i = 0, j = 0, idx1, idx2;
+			bool isSkip = false;
+
+			while (i + 1 < cnt) {
+				idx1 = lineIdx[i++];
+				idx2 = lineIdx[i];
+				if (idx2 == lastidx) {
+					if (i + 1 != cnt) { // if lastidx is in the middle, skip it
+						idx2 = lineIdx[++i];
+						isSkip = true;
+					}
+				}
+				
+				g_vertex_lines[j++] = point[idx1].x;
+				g_vertex_lines[j++] = point[idx1].y;
+				g_vertex_lines[j++] = 0;
+				g_vertex_lines[j++] = point[idx2].x;
+				g_vertex_lines[j++] = point[idx2].y;
+				g_vertex_lines[j++] = 0;
+			}
+			if (isSkip) {
+				g_vertex_lines[j++] = point[idx2].x;
+				g_vertex_lines[j++] = point[idx2].y;
+				g_vertex_lines[j++] = 0;
+				g_vertex_lines[j++] = point[lastidx].x;
+				g_vertex_lines[j++] = point[lastidx].y;
+				g_vertex_lines[j++] = 0;
+			}
+
+			for (int i = 0; i < cnt - 1; i++) {
+				g_color_lines[j++] = 1.f;
+				g_color_lines[j++] = 1.f;
+				g_color_lines[j++] = 1.f;
+				g_color_lines[j++] = 1.f;
+				g_color_lines[j++] = 1.f;
+				g_color_lines[j++] = 1.f;
+			}
+
+			isLineSet = true;
 		}
 
 		// Fill GPU buffer for dynamic draw
@@ -276,8 +346,16 @@ int main(void)
 
 		// Bind buffer for dynamic draw
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_points);
-		glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 4 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_POINTS * 4 * sizeof(GLfloat), g_color_points);
+		glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_POINTS * 3 * sizeof(GLfloat), g_color_points);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_lines);
+		glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_POINTS * 2 * 3 * sizeof(GLfloat), g_vertex_lines);
+
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_lines);
+		glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_POINTS * 2 * 3 * sizeof(GLfloat), g_color_lines);
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
@@ -308,10 +386,40 @@ int main(void)
 		);
 
 		glDrawArrays(GL_POINTS, 0, cnt);
-		//glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+
+		if (isLineSet) {
+			// 1rst attribute buffer : vertices
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_lines);
+			glVertexAttribPointer(
+				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+			);
+
+			// 2nd attribute buffer : colors
+			glEnableVertexAttribArray(1);
+			glBindBuffer(GL_ARRAY_BUFFER, colorbuffer_lines);
+			glVertexAttribPointer(
+				1,                          // attribute. No particular reason for 1, but must match the layout in the shader.
+				3,                          // size
+				GL_FLOAT,                   // type
+				GL_FALSE,                   // normalized?
+				0,                          // stride
+				(void*)0                    // array buffer offset
+			);
+
+			glDrawArrays(GL_LINES, 0, (cnt - 1) * 2); 
+
+			glDisableVertexAttribArray(1);
+			glDisableVertexAttribArray(0);
+		}
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
