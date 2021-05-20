@@ -68,8 +68,6 @@ void tConsole() {
 	cout << "Last point: ";
 	cin >> lastx >> lasty;
 
-	startx /= 10; starty /= 10;
-	lastx /= 10;  lasty /= 10;
 	isStartLastSet = true;
 }
 
@@ -127,8 +125,6 @@ int main(void)
 			cout << "The type must be integer" << endl;
 		}
 		catch (int i) {
-			x /= 10;
-			y /= 10;
 			point.push_back(Point(x, y));
 			cnt++;
 		}
@@ -145,10 +141,6 @@ int main(void)
 						{304,-220}, {-20,-340}, {460,0}, {220,0}, {-10,20},
 						{0,20}, {-70,80}, {-330,-440}, {140,-70}, {70,-500}, };
 	cnt = 20;
-	for (int i = 0; i < cnt; i++) {
-		point[i].x /= 10;
-		point[i].y /= 10;
-	}
 #endif // TEST
 	
 	// Initialise GLFW

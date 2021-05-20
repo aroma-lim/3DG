@@ -24,7 +24,7 @@ glm::mat4 getProjectionMatrix(){
 }
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3(0, 1, 95);
+glm::vec3 position = glm::vec3(0, 1, 990);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = M_PI;
 // Initial vertical angle : none
@@ -32,8 +32,8 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
-float speed = 40.0f;
-float mouseSpeed = 0.1f;
+float speed = 800.0f;
+float mouseSpeed = 2.f;
 
 double xpos, ypos;
 double xpos0, ypos0;
@@ -116,11 +116,11 @@ void computeMatricesFromInputs(){
 	}
 	// Move backward (zoom out)
 	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-		if (position.z < 99)
+		if (position.z < 999)
 			position -= direction * deltaTime * speed;
 	}
 
-	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
+	float FoV = initialFoV;
 
 	float aspectRatio;
 	if (window_width <= 0 || window_height <= 0)
@@ -128,7 +128,7 @@ void computeMatricesFromInputs(){
 	else
 		aspectRatio = window_width / window_height;
 	
-	ProjectionMatrix = glm::perspective(FoV, aspectRatio, 0.1f, 100.0f);
+	ProjectionMatrix = glm::perspective(FoV, aspectRatio, 0.1f, 1000.0f);
 
 	// Camera matrix
 	ViewMatrix       = glm::lookAt(
