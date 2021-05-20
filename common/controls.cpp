@@ -24,7 +24,7 @@ glm::mat4 getProjectionMatrix(){
 }
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3(0, 1, 990);
+glm::vec3 position = glm::vec3(0, 1, 950);
 // Initial horizontal angle : toward -Z
 float horizontalAngle = M_PI;
 // Initial vertical angle : none
@@ -111,12 +111,12 @@ void computeMatricesFromInputs(){
 	}
 	// Move forward (zoom in)
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-		if (position.z > 3)
+		if (position.z > 50)
 			position += direction * deltaTime * speed;
 	}
 	// Move backward (zoom out)
 	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-		if (position.z < 999)
+		if (position.z < 2050)
 			position -= direction * deltaTime * speed;
 	}
 
@@ -126,9 +126,9 @@ void computeMatricesFromInputs(){
 	if (window_width <= 0 || window_height <= 0)
 		aspectRatio = 1;
 	else
-		aspectRatio = window_width / window_height;
+		aspectRatio = (float)window_width / (float)window_height;
 	
-	ProjectionMatrix = glm::perspective(FoV, aspectRatio, 0.1f, 1000.0f);
+	ProjectionMatrix = glm::perspective(FoV, aspectRatio, 100.f, 2100.0f);
 
 	// Camera matrix
 	ViewMatrix       = glm::lookAt(

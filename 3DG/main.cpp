@@ -23,12 +23,13 @@ using namespace glm;
 #include <common/controls.hpp>
 
 #include <iostream>
+using namespace std;
+
 #include <vector>
 #include <math.h>
 #include <algorithm>
 #include <thread>
 
-using namespace std;
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
@@ -39,9 +40,9 @@ int window_width;
 
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
-float startx, starty, lastx, lasty;
+float startx, starty, endx, endy;
 bool isFirst = true;
-bool isStartLastSet = false;
+bool isStartEndSet = false;
 bool isColorSet = false;
 bool isLineSet = false;
 
@@ -65,10 +66,10 @@ void tConsole() {
 	}
 	cout << "Start point: ";
 	cin >> startx >> starty;
-	cout << "Last point: ";
-	cin >> lastx >> lasty;
+	cout << "End point: ";
+	cin >> endx >> endy;
 
-	isStartLastSet = true;
+	isStartEndSet = true;
 }
 
 int main(void)
@@ -136,11 +137,15 @@ int main(void)
 #endif // EXECUTE
 
 #ifdef TEST
-	Point point[20] = { {60,-8}, {400,500}, {90,0}, {0,70}, {40,30},
+	Point point[20] = { {60,-8}, {500,500}, {300,300}, {0,70}, {40,30},
 						{20,0}, {0,-310}, {70,0}, {-88,-80}, {-220,500},
 						{304,-220}, {-20,-340}, {460,0}, {220,0}, {-10,20},
 						{0,20}, {-70,80}, {-330,-440}, {140,-70}, {70,-500}, };
 	cnt = 20;
+	for (int i = 0; i < cnt; i++)
+		cout << "Point[" << i << "]: " << point[i].x << " " << point[i].y << endl;
+	cout << "Point[20]: *" << endl;
+	cout << "num points: " << cnt << endl << endl;
 #endif // TEST
 	
 	// Initialise GLFW
@@ -247,7 +252,7 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, MAX_POINTS * 2 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
 	int lineIdx[MAX_POINTS];
-	int lastidx;
+	int endidx;
 	thread t(tConsole);
 
 	do {
@@ -272,8 +277,8 @@ int main(void)
 		// For rotate with mouse wheel
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 
-		// Indicate the start and the last point
-		if (!isFirst && !isColorSet && isStartLastSet) {
+		// Indicate the start and the end point
+		if (!isFirst && !isColorSet && isStartEndSet) {
 			// Find the start point
 			pair<float, int> distance[MAX_POINTS];
 			for (int i = 0; i < cnt; i++) {
@@ -287,24 +292,24 @@ int main(void)
 			for (int i = 0; i < cnt; i++)
 				lineIdx[i] = distance[i].second;
 
-			// Find the last point
+			// Find the end point
 			for (int i = 0; i < cnt; i++) {
-				distance[i].first = abs(point[i].x - lastx) + abs(point[i].y - lasty);
+				distance[i].first = abs(point[i].x - endx) + abs(point[i].y - endy);
 				distance[i].second = i;
 			}
 			sort(distance, distance + cnt);
-			lastidx = distance[0].second;
-			if (lastidx == startidx)
-				lastidx = distance[1].second;
+			endidx = distance[0].second;
+			if (endidx == startidx)
+				endidx = distance[1].second;
 
-			// Set the color of start and the last point
+			// Set the color of start and the end point
 			point[startidx].r = 1.f;
 			point[startidx].g = 0.f;
 			point[startidx].b = 0.f;
 
-			point[lastidx].r = 0.f;
-			point[lastidx].g = 0.f;
-			point[lastidx].b = 1.f;
+			point[endidx].r = 0.f;
+			point[endidx].g = 0.f;
+			point[endidx].b = 1.f;
 
 			isColorSet = true;
 		}
@@ -318,7 +323,7 @@ int main(void)
 			while (i + 1 < cnt) {
 				idx1 = lineIdx[i++];
 				idx2 = lineIdx[i];
-				if (idx2 == lastidx && i + 1 != cnt) { // if lastidx is in the middle, skip it
+				if (idx2 == endidx && i + 1 != cnt) { // if endidx is in the middle, skip it
 					idx2 = lineIdx[++i];
 					isSkip = true;
 				}
@@ -333,8 +338,8 @@ int main(void)
 				g_vertex_lines[j++] = point[idx2].x;
 				g_vertex_lines[j++] = point[idx2].y;
 				g_vertex_lines[j++] = 0;
-				g_vertex_lines[j++] = point[lastidx].x;
-				g_vertex_lines[j++] = point[lastidx].y;
+				g_vertex_lines[j++] = point[endidx].x;
+				g_vertex_lines[j++] = point[endidx].y;
 				g_vertex_lines[j++] = 0;
 			}
 
@@ -436,8 +441,7 @@ int main(void)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		// Press Enter to type Start point and Last point in console
-		//if (isFirst && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+		// Press Enter to type Start point and end point in console
 		if (isFirst) {
 			isFirst = false;
 		}
