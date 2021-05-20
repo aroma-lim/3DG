@@ -111,13 +111,15 @@ void computeMatricesFromInputs(){
 	}
 	// Move forward (zoom in)
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-		if (position.z > 50)
-			position += direction * deltaTime * speed;
+		position += direction * deltaTime * speed;
+		if (position.z <= 100) 
+			position.z = 100;
 	}
 	// Move backward (zoom out)
 	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-		if (position.z < 2050)
-			position -= direction * deltaTime * speed;
+		position -= direction * deltaTime * speed;
+		if (position.z >= 2000) 
+			position.z = 2000;
 	}
 
 	float FoV = initialFoV;
