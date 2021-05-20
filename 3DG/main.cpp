@@ -39,11 +39,11 @@ int window_width;
 
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
+float startx, starty, lastx, lasty;
 bool isFirst = true;
 bool isStartLastSet = false;
 bool isColorSet = false;
 bool isLineSet = false;
-float startx, starty, lastx, lasty;
 
 class Point {
 	public:
@@ -87,11 +87,28 @@ int main(void)
 	while (1) {
 		cout << "Point[" << cnt << "]: ";
 		cin >> x;
-		if (getchar() == '*')
-			break;
+		if (getchar() == '*') {
+			if (cnt >= 10) break;
+			else {
+				cout << "The number of points must be at least 10" << endl;
+				cout << "(current num points: " << cnt << ")" << endl;
+				cin.clear();
+				cin.ignore(256, '\n');
+				continue;
+			}
+		}
+			
 		cin >> y;
-		if (getchar() == '*')
-			break;
+		if (getchar() == '*') {
+			if (cnt >= 10) break;
+			else {
+				cout << "The number of points must be at least 10" << endl;
+				cout << "(current num points: " << cnt << ")" << endl;
+				cin.clear();
+				cin.ignore(256, '\n');
+				continue;
+			}
+		}
 		
 		try {
 			if (cin.fail())
@@ -441,6 +458,8 @@ int main(void)
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer_points);
 	glDeleteBuffers(1, &colorbuffer_points);
+	glDeleteBuffers(1, &vertexbuffer_lines);
+	glDeleteBuffers(1, &colorbuffer_lines);
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &VertexArrayID);
 
