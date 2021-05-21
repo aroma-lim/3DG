@@ -74,7 +74,7 @@ void computeMatricesFromInputs(){
 	);
 	
 	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
+	glm::vec3 up = glm::cross(right, direction);
 
 	// Compute new position with mouse
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
@@ -90,24 +90,24 @@ void computeMatricesFromInputs(){
 		xpos0 = xpos;
 		ypos0 = ypos;
 	}
-	else // in the case of GLFW_RELEASE
+	else // In the case of GLFW_RELEASE
 		isFirstmouse = true;
 
 	// Strafe up
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-		position += up * deltaTime * speed;
-	}
-	// Strafe down
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
 		position -= up * deltaTime * speed;
 	}
+	// Strafe down
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+		position += up * deltaTime * speed;
+	}
 	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-		position += right * deltaTime * speed;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+		position -= right * deltaTime * speed;
 	}
 	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-		position -= right * deltaTime * speed;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
+		position += right * deltaTime * speed;
 	}
 	// Move forward (zoom in)
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {

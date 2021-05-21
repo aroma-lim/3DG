@@ -30,18 +30,16 @@ using namespace std;
 #include <algorithm>
 #include <thread>
 
-
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
 #define MAX_POINTS 999
 
 int window_height;
 int window_width;
-
 const float toRadians = M_PI / 180.0f;
 float currentAngle = 0.0f;
 float startx, starty, endx, endy;
-bool isFirst = true;
+bool isFirstDraw = true;
 bool isStartEndSet = false;
 bool isColorSet = false;
 bool isLineSet = false;
@@ -61,7 +59,7 @@ class Point {
 };
 
 void tConsole() {
-	while (isFirst) {
+	while (isFirstDraw) {
 		// wait
 	}
 	cout << "Start point: ";
@@ -133,7 +131,7 @@ int main(void)
 	};
 	cin.clear();
 	cin.ignore(256, '\n');
-	cout << "num points: " << cnt << endl;
+	cout << "num points: " << cnt << endl << endl;
 #endif // EXECUTE
 
 #ifdef TEST
@@ -190,7 +188,7 @@ int main(void)
 	glfwPollEvents();
 	glfwSetCursorPos(window, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
-	// Dark blue background
+	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Enable depth test
@@ -278,11 +276,11 @@ int main(void)
 		MVP = glm::rotate(MVP, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// Indicate the start and the end point
-		if (!isFirst && !isColorSet && isStartEndSet) {
+		if (!isFirstDraw && !isColorSet && isStartEndSet) {
 			// Find the start point
 			pair<float, int> distance[MAX_POINTS];
 			for (int i = 0; i < cnt; i++) {
-				distance[i].first = abs(point[i].x - startx) + abs(point[i].y - starty);
+				distance[i].first = sqrt(pow(point[i].x - startx, 2) + pow(point[i].y - starty, 2));
 				distance[i].second = i;
 			}
 			sort(distance, distance + cnt);
@@ -441,9 +439,8 @@ int main(void)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		// Press Enter to type Start point and end point in console
-		if (isFirst) {
-			isFirst = false;
+		if (isFirstDraw) {
+			isFirstDraw = false;
 		}
 
 	} // Check if the ESC key or Q was pressed or the window was closed
