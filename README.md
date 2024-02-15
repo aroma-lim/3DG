@@ -3,7 +3,7 @@
 ## Features
 - 2D points generation & Drawing
 - Create random trajectory
-- User Interaction: Zoom in/out, rotation, traslation
+- User Interaction: Zoom in/out, rotation, translation
 
 
 ## Dependancy
